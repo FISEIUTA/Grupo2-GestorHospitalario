@@ -48,16 +48,11 @@ Gestor_Hospitalario/
 └── Infraestructura.md               # Guía de configuración VMs
 ```
 
-## 🔄 Diagrama de Flujo - Creación de Consulta Médica
-sequenceDiagram
-    Frontend->>+Backend: POST /api/ConsultaMedica/Crear (DTO)
-    Backend->>+Validación: Verificar solapamiento horario
-    Validación-->>-Backend: OK/Error
-    Backend->>+MySQL Master: INSERT consulta
-    MySQL Master->>MySQL Slave: Replicación (binlog)
-    MySQL Slave-->>-Backend: ACK
-    Backend-->>-Frontend: 201 Created (ReadDTO)
+## 🗃️ Diagrama de Base de Datos
+![deepseek_mermaid_20250423_b8cecc](https://github.com/user-attachments/assets/6a493428-6c5f-48af-bb8e-cbc543b173b8)
 
+## 🔄 Diagrama de Flujo - Creación de Consulta Médica
+![deepseek_mermaid_20250423_6d0bae](https://github.com/user-attachments/assets/095933bd-b3b3-4004-9d2e-31570ffd28de)
 
 ## 📊 Estructura de la API REST
 ```csharp
@@ -89,6 +84,182 @@ sequenceDiagram
 }
 ```
 
-![230b2cab-0151-4b75-ab19-1a81f86331e4](https://github.com/user-attachments/assets/943226fd-1d5a-4941-b355-5b293f667799)
+## 🖥️ Diagrama de Componentes
+```
++-------------+       +-------------+       +-------------------+
+|  Frontend   |       |  Backend    |       |  Infraestructura  |
++-------------+       +-------------+       +-------------------+
+|             |       |             |       |                   |
+| [Interfaz   | HTTP/ | [Controla-  |       |    [VM Master]    |
+|  Web]       | REST  |  dores]     |       |        |          |
+|     |       |       |     |       | Conex.|        |          |
+| [API Fetch] |       | [Servicios] | BD    | [MySQL Primary]   |
+|             |       |     |       |       |                   |
++-------------+       | [Repositorio]|       |    [VM Slave 1]   |
+                      |     |       |       |        |          |
+                      | [MySQL]     |       | [MySQL Replica]   |
+                      |             |       |                   |
+                      +-------------+       |    [VM Slave 2]   |
+                                            |        |          |
+                                            | [MySQL Replica]   |
+                                            |                   |
+                                            +-------------------+
+```
 
+## 🖥️ Diagrama Técnico:
+![deepseek_mermaid_20250423_0cf52f](https://github.com/user-attachments/assets/c6bdfc40-00cc-4419-a694-658c7a00195d)
 
+## 🔐 Políticas de Seguridad Implementadas
+CORS Configurado (Program.cs):
+```csharp
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowAll", policy => 
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
+});
+```
+Validaciones en DTOs:
+```csharp
+public class CentroMedicoCreateDTO {
+    [Required(ErrorMessage = "El nombre es obligatorio")]
+    [StringLength(100, MinimumLength = 5)]
+    public string Nombre { get; set; }
+    
+    [Required]
+    [RegularExpression(@"^[0-9]{7,15}$", ErrorMessage = "Teléfono inválido")]
+    public string Telefono { get; set; }
+}
+```
+
+## 🚀 Guía Rápida de Despliegue
+Configuración VMs:
+```bash
+# En todas las instancias:
+sudo apt update && sudo apt install mysql-server -y
+sudo mysql_secure_installation
+```
+
+Replicación MySQL:
+```sql
+-- En MASTER:
+CREATE USER 'replicator'@'%' IDENTIFIED BY 'password';
+GRANT REPLICATION SLAVE ON *.* TO 'replicator'@'%';
+
+-- En SLAVES:
+CHANGE MASTER TO
+  MASTER_HOST='192.168.1.30',
+  MASTER_USER='replicator',
+  MASTER_PASSWORD='password',
+  MASTER_LOG_FILE='mysql-bin.000004',
+  MASTER_LOG_POS=4349;
+START SLAVE;
+```
+
+```sql
+# Ver estado replicación
+SHOW SLAVE STATUS\G
+# Ver procesos MySQL
+SHOW PROCESSLIST;
+```
+
+## 🗃️ Base de Datos
+Proveedor: MySQL
+Host: Máquinas Virtuales Ubuntu (Infraestructura distribuida)
+Configuración:
+
+Cadena de conexión en appsettings.json
+
+Configuración de replicación maestro-esclavo entre centros médicos
+```bash
+"ConnectionStrings": {
+  "MySqlConnection": "server=192.168.1.30;port=3306;database=GestionHospitalaria;user=ubuntu;password=Ubuntu@123;"
+}
+```
+
+Tablas principales:
+CentrosMedicos
+Especialidades
+Medicos
+Empleados
+ConsultasMedicas
+
+## ⚙️ Endpoints REST
+Centros Médicos
+GET /api/CentrosMedicos/Listar → Listar todos
+GET /api/CentrosMedicos/Buscar/{id} → Buscar por ID
+POST /api/CentrosMedicos/Crear → Crear nuevo
+PUT /api/CentrosMedicos/Actualizar/{id} → Actualizar
+DELETE /api/CentrosMedicos/Eliminar/{id} → Eliminar
+
+Médicos
+GET /api/Medico/Listar → Listar todos
+POST /api/Medico/Crear → Crear nuevo
+PUT /api/Medico/Actualizar/{id} → Actualizar
+DELETE /api/Medico/Eliminar/{id} → Eliminar
+
+Consultas Médicas
+GET /api/ConsultaMedica/Listar → Listar todas
+POST /api/ConsultaMedica/Crear → Crear nueva
+PUT /api/ConsultaMedica/Actualizar/{id} → Actualizar
+DELETE /api/ConsultaMedica/Eliminar/{id} → Eliminar
+(Estructura similar para Empleados y Especialidades)
+
+## 🖥️ Interfaz Web
+Tecnologías: HTML, CSS, JavaScript
+Estructura:
+```bash
+Interfaz_Funcional/
+├── CSS/
+├── HTML/
+└── JAVASCRIPT/
+```
+
+Secciones:
+Centros Médicos
+Médicos
+Consultas Médicas
+Empleados
+Especialidades
+
+Características:
+Diseño responsive con menú de navegación
+Modales para formularios de CRUD
+Validaciones de campos
+Búsqueda en tiempo real
+
+## ⚒️ Cómo Ejecutar
+## 🔌 Requisitos
+.NET Core SDK
+MySQL Server
+Máquinas virtuales Ubuntu (para configuración distribuida)
+Visual Studio o VS Code
+
+## 🚀 Pasos
+Clonar repositorio
+Configurar cadenas de conexión en appsettings.json
+Ejecutar migraciones de Entity Framework:
+```bash
+dotnet ef database update
+```
+
+## 🚧 Estado del Proyecto
+✅ Sistema completamente funcional
+✅ Configuración distribuida implementada
+✅ Documentación técnica completa
+
+## 💡 Características Destacadas
+Arquitectura MVC con separación clara de responsabilidades
+API RESTful bien documentada con Swagger
+Replicación de datos entre centros médicos (Quito, Guayaquil, Cuenca)
+DTOs especializados para cada operación (Create/Read/Update)
+Validaciones robustas en controladores
+
+## 🌐 Infraestructura Distribuida
+Configuración:
+1 servidor maestro (Centro Médico Quito)
+2 servidores esclavos (Guayaquil y Cuenca)
+Replicación MySQL configurada mediante:
+Archivos de configuración mysqld.cnf
+Usuarios de replicación
+Scripts SQL de inicialización
