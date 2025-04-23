@@ -1,127 +1,94 @@
 # Proyecto Gestor Hospitalario
 
-## SGA - Sistema de Gestión Académica
+## 📚 SGA - Sistema de Centros Medicos
+Este proyecto es un sistema de gestión académica completo, compuesto por una API RESTful desarrollada en ASP.NET Core, conectada a una base de datos MySQL en maquinas virtuales con Ubuntu server 24, con una interfaz web básica (HTML + JS) para gestionar en los centro Medicos los Empleados, Medicos, consultas medicas y especialidades.
 
-📚 SGA - Sistema de Gestión Académica
-Este proyecto es un sistema de gestión académica completo, compuesto por una API RESTful desarrollada en ASP.NET Core, conectada a una base de datos PostgreSQL en la nube (Railway), con una interfaz web básica (HTML + JS) para gestionar estudiantes, profesores, materias y semestres.
+## 🏥 Sistema de Gestión Hospitalaria Distribuido
+## 🧰 Tecnologías Utilizadas
+Componente	Tecnología
+Backend	ASP.NET Core 7, Entity Framework Core, Swagger/OpenAPI
+Base de Datos	MySQL 8.0 (Configuración distribuida Maestro-Esclavo)
+Frontend	HTML5, CSS3, JavaScript (Vanilla)
+Infraestructura	3 VMs Ubuntu Server 24.04 (VirtualBox)
+Seguridad	CORS Policies, Validaciones en capa de controlador
+DevOps	Configuración manual de replicación MySQL
 
-## Tecnologías utilizadas
+```
+Gestor_Hospitalario/
+├── 📁 Context/
+│   └── HospitalContext.cs           # Configuración EF Core y DbSets
+├── 📁 Controllers/
+│   ├── CentrosMedicosController.cs  # 350+ líneas (CRUD completo)
+│   ├── ConsultaMedicaController.cs  # Con validación de horarios
+│   ├── EmpleadoController.cs        # Gestión de personal administrativo
+│   ├── EspecialidadesController.cs  # Simple CRUD
+│   └── MedicoController.cs          # Relación con especialidades
+├── 📁 DTos/
+│   ├── CentroMedico/                # Separación por entidad
+│   │   ├── CreateDTO.cs             # Validaciones Required
+│   │   ├── ReadDTO.cs               # Proyecciones seguras
+│   │   └── UpdateDTO.cs             # 
+│   ├── ConsultaMedica/              # DTOs para consultas
+│   └── ...                          # Similar estructura para otras entidades
+├── 📁 Models/
+│   ├── CentroMedico.cs              # Modelo principal
+│   ├── ConsultaMedica.cs            # Con relaciones
+│   ├── Empleado.cs                  # 
+│   ├── Especialidad.cs              # 
+│   └── Medico.cs                    # Relación N:1 con Especialidad
+├── 📁 Migrations/                    # Historial de migraciones EF
+├── 📁 wwwroot/
+│   ├── 📁 css/                       # Styles.css + Normalize
+│   ├── 📁 js/                        # 5 archivos modularizados
+│   │   ├── main.js                  # Lógica principal
+│   │   └── entidades/               # JS por módulo
+│   └── index.html                   # Interfaz única con tabs
+├── appsettings.json                 # Cadenas de conexión
+├── Program.cs                       # Configuración CORS y Swagger
+└── Infraestructura.md               # Guía de configuración VMs
+```
 
-🧰 Tecnologías utilizadas
-✔️ ASP.NET Core 8
-✔️ Entity Framework Core
-✔️ PostgreSQL (hosteado en Railway)
-✔️ Swagger / OpenAPI
-✔️ HTML5, CSS3, JavaScript
-✔️ REST API + JSON
-✔️ Arquitectura limpia (MVC simplificado)
-
-
-
-
-📂 Estructura del Proyecto
-Proyecto Gestor Hospitalario/
-├── Acciones de GitHub/
-├── Connected Services/
-├── Dependencias/
-├── Properties/
-│   └── launchSettings.json
-├── Context/
-│   └── HospitalContext.cs
-├── Controllers/
-│   ├── ControlMedicoController.cs
-│   ├── ConsultaMedicasController.cs
-│   ├── EmpleadoController.cs
-│   ├── EspecialidadController.cs
-│   └── MedicosControllers.cs
-├── DTos/
-│   ├── ControlMedicoDTos.cs
-│   ├── ConsultasMedicasDTos.cs
-│   ├── EmpleadoDTos.cs
-│   ├── EspecialidadDtos.cs
-│   └── MedicosDTos.cs
-├── Migrations/
-│   ├── 20250423030645_Initial.cs
-│   └── HospitalContextModelSnapshot.cs
-├── Models/
-│   ├── ControlMedico.cs
-│   ├── ConsultaMedica.cs
-│   ├── Empleado.cs
-│   ├── Especialidad.cs
-│   └── Medico.cs
-├── appsettings.json
-├── Gestor Hospitalario.http
-├── Program.cs
-└── WeatherForecast.cs
-
-
-🗃️ Base de datos
-Proveedor: PostgreSQL
-Host: Railway (base en la nube)
-Configuración: vía Program.cs directamente
-🔒 Se recomienda moverla a appsettings.json con GetConnectionString("DefaultConnection").
-
-options.UseNpgsql("Host=interchange.proxy.rlwy.net;Port=56434;Database=ferrocarril;Username=postgres;Password=...");
-
-Tablas creadas:
-Personas (con herencia entre Estudiante y Profesor)
-Cursos (obsoleta, migrar a Materias)
-EstudiantesCursos (obsoleta, usar Semestre + Materia)
+## 🔄 Diagrama de Flujo - Creación de Consulta Médica
+sequenceDiagram
+    Frontend->>+Backend: POST /api/ConsultaMedica/Crear (DTO)
+    Backend->>+Validación: Verificar solapamiento horario
+    Validación-->>-Backend: OK/Error
+    Backend->>+MySQL Master: INSERT consulta
+    MySQL Master->>MySQL Slave: Replicación (binlog)
+    MySQL Slave-->>-Backend: ACK
+    Backend-->>-Frontend: 201 Created (ReadDTO)
 
 
-⚙️ Endpoints REST (actuales)
-Estudiantes
-GET /api/Estudiantes → Obtener todos
-POST /api/Estudiantes → Crear nuevo
-PUT /api/Estudiantes/{cedula} → Editar existente
-DELETE /api/Estudiantes/{cedula} → Eliminar
-Profesores
-GET /api/Profesor → Obtener todos
-POST /api/Profesor → Crear nuevo
-PUT /api/Profesor/{cedula} → Editar
-DELETE /api/Profesor/{cedula} → Eliminar
-Cursos (❌ obsoleto → migrar a materias/semestres)
-GET /api/Cursos
-POST /api/Cursos
-...
+## 📊 Estructura de la API REST
+```csharp
+{
+  "CentrosMedicos": {
+    "Endpoints": {
+      "GET Listar": "/api/CentrosMedicos/Listar",
+      "POST Crear": {
+        "Body": {
+          "Nombre": "string (required)",
+          "Direccion": "string (required)",
+          "Telefono": "string (required)",
+          "Email": "string (required)"
+        },
+        "Validaciones": [
+          "Nombre único por dirección",
+          "Formato email válido"
+        ]
+      }
+    },
+    "EjemploResponse": {
+      "CentroID": 1,
+      "Nombre": "Hospital Central",
+      "Direccion": "Av. Principal 123",
+      "Telefono": "022345678",
+      "Email": "contacto@hospitalcentral.com"
+    }
+  }
+}
+```
 
+![230b2cab-0151-4b75-ab19-1a81f86331e4](https://github.com/user-attachments/assets/943226fd-1d5a-4941-b355-5b293f667799)
 
-🖥️ Interfaz web (wwwroot/index.html)
-HTML con pestañas para cada sección:
-Estudiantes
-Profesores
-Materias
-Semestres
-Conexión vía fetch al backend en script.js
-Incluye validaciones de cédula, emails institucionales, etc.
-Contiene buscador con ícono de lupa por cédula (modal emergente)
-
-
-⚒️ Cómo ejecutar
-🔌 Requisitos
-.NET 8 SDK
-PostgreSQL (local o Railway)
-Visual Studio o VS Code
-🚀 Pasos
-git clone https://github.com/tu-usuario/SGA.Api.git
-cd SGA.Api
-dotnet restore
-dotnet ef database update   # si necesitas migrar desde cero
-dotnet run
-Accede a:
-
-Swagger: https://localhost:{puerto}/swagger
-Interfaz Web: https://localhost:{puerto}/index.html
-
-
-🚧 Estado del Proyecto
-🔄 En transición de Cursos a un modelo con Materias + Semestres
-🧩 Implementación de gestión por paralelo (A, B) y búsqueda avanzada por cédula
-📦 Preparado para despliegue en Render + Railway (versión nube)
-
-💡 Características destacadas
-Herencia de modelos (Persona → Estudiante/Profesor)
-Relaciones correctas EF Core (1:N y N:N)
-Arquitectura limpia separada en: Modelos, Controladores, Contexto
-Interfaz moderna integrada con JS puro
 
