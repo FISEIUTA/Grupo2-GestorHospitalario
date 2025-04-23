@@ -3,6 +3,7 @@
 📚 SGA - Sistema de Gestión Académica
 Este proyecto es un sistema de gestión académica completo, compuesto por una API RESTful desarrollada en ASP.NET Core, conectada a una base de datos PostgreSQL en la nube (Railway), con una interfaz web básica (HTML + JS) para gestionar estudiantes, profesores, materias y semestres.
 
+
 🧰 Tecnologías utilizadas
 ✔️ ASP.NET Core 8
 ✔️ Entity Framework Core
@@ -11,6 +12,9 @@ Este proyecto es un sistema de gestión académica completo, compuesto por una A
 ✔️ HTML5, CSS3, JavaScript
 ✔️ REST API + JSON
 ✔️ Arquitectura limpia (MVC simplificado)
+
+
+
 
 📂 Estructura del Proyecto
 Proyecto Gestor Hospitalario/
