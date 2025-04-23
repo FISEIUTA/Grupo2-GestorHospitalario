@@ -263,3 +263,13 @@ Replicación MySQL configurada mediante:
 Archivos de configuración mysqld.cnf
 Usuarios de replicación
 Scripts SQL de inicialización
+
+## 📊 Modelo de Datos
+![deepseek_mermaid_20250423_6ad915](https://github.com/user-attachments/assets/2efd82f6-4d21-4410-9e76-597cf07445a3)
+
+## 📌 Mejoras Futuras
+Implementar autenticación JWT
+Migrar frontend a Vue.js/React
+Añadir módulo de historias clínicas
+Implementar balanceo de carga entre centros
+
